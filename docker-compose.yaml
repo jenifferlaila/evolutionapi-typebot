@@ -1,0 +1,110 @@
+version: "3"
+
+services:
+  #region Evolution API
+  evolution-api:
+    container_name: evolution_api
+    image: atendai/evolution-api
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - evolution_store:/evolution/store
+      - evolution_instances:/evolution/instances
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "25m"
+        max-file: "4"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 1.5G
+        reservations:
+          cpus: "0.1"
+          memory: 100M
+  #endregion
+
+  #region Typebot
+  typebot-db:
+    image: postgres:14-alpine
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=typebot
+      - POSTGRES_PASSWORD=typebot
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.4"
+          memory: 1G
+        reservations:
+          cpus: "0.2"
+          memory: 100M
+
+  typebot-builder:
+    image: baptistearno/typebot-builder:latest
+    restart: always
+    depends_on:
+      - typebot-db
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file: .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 500M
+        reservations:
+          cpus: "0.1"
+          memory: 120M
+
+  typebot-viewer:
+    image: baptistearno/typebot-viewer:latest
+    restart: always
+    ports:
+      - "3001:3000"
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.4"
+          memory: 800M
+        reservations:
+          cpus: "0.1"
+          memory: 80M
+  #endregion
+
+volumes:
+  evolution_store:
+  evolution_instances:
+  db-data:
+
+networks:
+  tsp_network:
+    external: true
+  external-dns:
+    external: true
