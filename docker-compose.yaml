@@ -175,13 +175,8 @@ services:
       - chatwoot_postgres:/var/lib/postgresql/data
     networks:
       - tsp
-    environment:
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DB=${POSTGRES_DATABASE}
-      - POSTGRES_USER=${POSTGRES_USERNAME}
-      - POSTGRES_PASSWORD=${POSTGRES_HOST}
     healthcheck:
-      test: ["CMD-SHELL", 'pg_isready -U "$POSTGRES_USERNAME"']
+      test: ["CMD-SHELL", 'pg_isready -U "postgres"']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -195,9 +190,9 @@ services:
     restart: always
     ports:
       - "6379:6379"
-    command: ["sh", "-c", 'redis-server --requirepass "$REDIS_PASSWORD"']
+    command: ["sh", "-c", 'redis-server --requirepass "redis"']
     environment:
-      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      REDIS_PASSWORD: redis
     networks:
       - tsp
     healthcheck:
