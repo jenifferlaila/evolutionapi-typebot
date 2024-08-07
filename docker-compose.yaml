@@ -6,6 +6,9 @@ services:
     container_name: evolution_api
     image: atendai/evolution-api
     restart: always
+    depends_on:
+      - typebot-viewer
+      - typebot-builder
     ports:
       - "8080:8080"
     env_file:
@@ -98,12 +101,133 @@ services:
           memory: 80M
   #endregion
 
+  #region Chatwoot
+  ###############################################################
+  # Chatwoot
+  ###############################################################
+  chatwoot:
+    image: chatwoot/chatwoot:v3.11.0
+    restart: always
+    env_file:
+      - chatwoot.env
+    ports:
+      - 3006:3000
+    depends_on:
+      chatwoot-redis:
+        condition: service_healthy
+      chatwoot-postgres:
+        condition: service_healthy
+    entrypoint: docker/entrypoints/rails.sh
+    command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
+    networks:
+      - tsp
+    deploy:
+      resources:
+        limits:
+          cpus: "1.3"
+          memory: 3.5G
+        reservations:
+          cpus: "0.5"
+          memory: 1.5G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "2"
+
+  sidekiq:
+    image: chatwoot/chatwoot:v3.11.0
+    restart: always
+    env_file:
+      - chatwoot.env
+    depends_on:
+      chatwoot-redis:
+        condition: service_healthy
+    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+    networks:
+      - tsp
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 0.8G
+        reservations:
+          cpus: "0.2"
+          memory: 200M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "2"
+
+  ###############################################################
+  # Postgres
+  ###############################################################
+
+  chatwoot-postgres:
+    image: postgres:16
+    restart: always
+    ports:
+      - "4321:5432"
+    env_file:
+      - chatwoot.env
+    volumes:
+      - chatwoot_postgres:/var/lib/postgresql/data
+    networks:
+      - tsp
+    environment:
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+      - POSTGRES_USER=${POSTGRES_USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRES_HOST}
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -U "$POSTGRES_USERNAME"']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ###############################################################
+  # Redis
+  ###############################################################
+
+  chatwoot-redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: ["sh", "-c", 'redis-server --requirepass "$REDIS_PASSWORD"']
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    networks:
+      - tsp
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 200M
+        reservations:
+          cpus: "0.05"
+          memory: 50M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+  #endregion
+
 volumes:
-  evolution_store:
-  evolution_instances:
   db-data:
+  evolution_store:
+  chatwoot_postgres:
+  evolution_instances:
 
 networks:
+  tsp:
   tsp_network:
     external: true
   external-dns:
