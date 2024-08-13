@@ -2,6 +2,10 @@ version: "3"
 
 services:
   #region Evolution API
+  ###############################################################
+  # Evolution API
+  #######################1
+
   evolution-api:
     container_name: evolution_api
     image: atendai/evolution-api
@@ -32,6 +36,10 @@ services:
   #endregion
 
   #region Typebot
+  ###############################################################
+  # Typebot
+  #######################
+
   typebot-db:
     image: postgres:14-alpine
     restart: always
@@ -104,7 +112,7 @@ services:
   #region Chatwoot
   ###############################################################
   # Chatwoot
-  ###############################################################
+  #######################1########################################
   chatwoot:
     image: chatwoot/chatwoot:v3.11.0
     restart: always
@@ -215,8 +223,39 @@ services:
         max-file: "2"
   #endregion
 
+  #region N8n
+  ###############################################################
+  # N8n
+  #######################
+
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    env_file:
+      - "n8n.env"
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 300M
+        reservations:
+          cpus: "0.05"
+          memory: 50M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "2"
+
+  #endregion
+
 volumes:
   db-data:
+  n8n_data:
   evolution_store:
   chatwoot_postgres:
   evolution_instances:
