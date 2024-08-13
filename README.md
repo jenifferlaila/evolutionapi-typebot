@@ -26,7 +26,8 @@ First and foremost, ensure `docker`, `docker-engine` and `docker-compose` are in
    - Modify the values found in the newly created files
 3. Run `docker compose up -d` to start all containers
 4. Navigate to whatever url you attributed to the `NEXTAUTH_URL` variable
-5. Login and create a new Typebot, importing from the file under `/typebot_templates/with_chatwoot_integration.json`
+5. Login and create a new Typebot, importing from the file `./typebot_templates/with_chatwoot_integration.json`
+   - (Optional) Make whatever changes to the Typebot you deem necessary (don't forget to export your bot as a JSON and keep it in a safe place)
 6. Publish your bot
 7. Navigate to `http://localhost:8080/manager` and login using the API Key you attributed to the `AUTHENTICATION_API_KEY` variable
 8. Create a new instance
@@ -36,3 +37,10 @@ First and foremost, ensure `docker`, `docker-engine` and `docker-compose` are in
     - `$FRONTEND_URL/installation/onboarding`
     - This will allow you to setup an admin account, and is allow available the first time you run the project
 12. In the EvolutionAPI manager, integrate your Chatwoot instance
+13. Head over to `http://localhost:5678/`
+14. Create an account
+15. Create a new workflow and import the file `./n8n_templates/reopen_typebot_chat.json`
+16. Revise and change the workflow values according to whatever values you modified in the .env files
+17. Save and enable the workflow
+
+That's it! If you followed all the steps up to here correctly you know have a bot active and linked to your WhatsApp account that will automatically answer your messages for you and will redirect users to support specialists after they choose to do so, after which the bot is paused until the issue is resolved

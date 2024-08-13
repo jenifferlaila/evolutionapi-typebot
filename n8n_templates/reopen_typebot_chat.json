@@ -1,0 +1,368 @@
+{
+  "name": "Reopen Typebot chat",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "c4a0a4f6-1e69-4009-8c8c-e2bf2b7eacc8",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:3006/api/v1/accounts/2/conversations",
+        "sendQuery": true,
+        "specifyQuery": "json",
+        "jsonQuery": "{\n  \"status\": \"resolved\",\n  \"inbox_id\": 2\n}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "D4rdeU9VukAegr5oSqsnQm7A"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "07e0ed67-7902-4ed6-9721-3543f95e68e0",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        380,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return Object.values($input.first().json.data['payload'])"
+      },
+      "id": "613a8024-6394-4e1f-a0d0-1c5ccb08d340",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "9aec73c7-938d-4db4-881a-f269db85f619",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        900,
+        260
+      ],
+      "retryOnFail": true,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:3006/api/v1/accounts/{{ $('If').item.json.account_id }}/conversations/{{ $('If').item.json.id }}/custom_attributes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "D4rdeU9VukAegr5oSqsnQm7A"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"custom_attributes\": {\n    \"typebot_status\": \"opened\",\n    \"protocolo\": \"{{ $('If').item.json.custom_attributes.protocolo }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "26d48491-3089-43a0-bd05-fa60fcd717d2",
+      "name": "HTTP Request2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1400,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Gets all conversations marked as resolved...",
+        "height": 80,
+        "width": 371.6638078902233
+      },
+      "id": "321a9f80-7f10-42f4-940a-48fc8c351bce",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        100,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Maps them into an array of items...",
+        "height": 80
+      },
+      "id": "faee9804-7b92-42c1-81c6-2e903fee9443",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Iterates over each one of the resolved conversation",
+        "height": 80.63499806247586,
+        "width": 529.2645465354495
+      },
+      "id": "c5fe5682-edf4-4323-a01a-a3ae38d9ca5f",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        880,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "content": "#### Skips a conversation if it is marked as closed or opened",
+        "height": 80
+      },
+      "id": "3734f366-f096-4b54-aade-24885c12c1b4",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "b8973fbf-0b81-477b-a7b9-1fcc181598bc",
+              "leftValue": "={{ $json.custom_attributes.typebot_status }}",
+              "rightValue": "=\"opened\"",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "297f6c24-2558-4d67-9df7-b0ca3093f3f2",
+              "leftValue": "={{ $json.custom_attributes.typebot_status }}",
+              "rightValue": "\"closed\"",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d517ea9f-87c9-4a09-92d8-a02da9743e58",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "content": "#### Unpause the bot",
+        "height": 80,
+        "width": 160.6349980624757
+      },
+      "id": "26713fa0-2e41-4df2-9780-cf96b929304b",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/typebot/changeStatus/TesteWppLeo",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "ctjq3o0aiv4vxw11q24clb"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"remoteJid\": \"{{ $json.meta.sender.identifier }}\",\n  \"status\":\"opened\"\n}",
+        "options": {}
+      },
+      "id": "65ad386d-7c7f-4cd4-b82b-fab36846834d",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1400,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "content": "#### Update the attribute on the conversation to reflect the current status",
+        "height": 83.7678270863255
+      },
+      "id": "d4c48853-1487-4d48-bf0c-bd7fa33b47bf",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        700
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bb2ea4ca-f2c4-41a5-bf12-6c30ab0f36ce",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f598f457fcb801a542839fe0f9e2caa8e67b4207e0fe8a1078edf7bd7906195a"
+  },
+  "id": "sqKgPCShEismqSJ4",
+  "tags": [
+    {
+      "createdAt": "2024-08-13T14:16:49.741Z",
+      "updatedAt": "2024-08-13T14:16:49.741Z",
+      "id": "FHplB7fKnTyb7OTo",
+      "name": "typebot"
+    }
+  ]
+}
