@@ -1,0 +1,146 @@
+{
+  "name": "Reopen Typebot - Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:3006/api/v1/accounts/{{ $('If').item.json.account_id }}/conversations/{{ $('If').item.json.id }}/custom_attributes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api_access_token",
+              "value": "D4rdeU9VukAegr5oSqsnQm7A"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"custom_attributes\": {\n    \"typebot_status\": \"opened\",\n    \"protocolo\": \"{{ $('If').item.json.custom_attributes.protocolo }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "51cf53de-9ff5-4400-8566-35ef69823525",
+      "name": "HTTP Request2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1400,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "content": "#### Unpause the bot",
+        "height": 80,
+        "width": 160.6349980624757
+      },
+      "id": "4a1c5ae4-a9a6-4cd4-96af-ad104b07c853",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/typebot/changeStatus/TesteWppLeo",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apiKey",
+              "value": "ctjq3o0aiv4vxw11q24clb"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"remoteJid\": \"{{ $json.meta.sender.identifier }}\",\n  \"status\":\"opened\"\n}",
+        "options": {}
+      },
+      "id": "83338ff3-f1df-47ee-bd45-7f306032a214",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1180,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "content": "#### Update the attribute on the conversation to reflect the current status",
+        "height": 83.7678270863255
+      },
+      "id": "b5d39983-e45d-4b6d-bc6a-5c1b96bdaa01",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "path": "typebot/resume",
+        "options": {}
+      },
+      "id": "f3aee3c6-358e-4914-9110-76a0748a989a",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        820,
+        420
+      ],
+      "webhookId": "a52a1c47-6729-40aa-a74e-7e88493c8214"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "83a84103-999e-42c3-bc9d-c96ac3722646",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f598f457fcb801a542839fe0f9e2caa8e67b4207e0fe8a1078edf7bd7906195a"
+  },
+  "id": "FjQXDEhYauakIAhr",
+  "tags": [
+    {
+      "createdAt": "2024-08-13T14:16:49.741Z",
+      "updatedAt": "2024-08-13T14:16:49.741Z",
+      "id": "FHplB7fKnTyb7OTo",
+      "name": "typebot"
+    }
+  ]
+}
